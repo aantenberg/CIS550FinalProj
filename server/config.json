@@ -1,0 +1,9 @@
+{
+  "rds_host": "database-1.cmj3evwckvit.us-east-1.rds.amazonaws.com",
+  "rds_port": "3306",
+  "rds_user": "cisfinal",
+  "rds_password" : "cisfinal123",
+  "rds_db": "GoogleMaps",
+  "server_host": "localhost",
+  "server_port":"8080"
+}
