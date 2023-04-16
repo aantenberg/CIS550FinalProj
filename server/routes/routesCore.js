@@ -28,8 +28,24 @@ function getTableName(restaurantType) {
     return null
 }
 
+function testParamsError(zipcode, radius) {
+    if (!zipcode) {
+        return 'Zipcode query parameter required'
+      }
+    
+      if (!Number(radius) || Number(radius) < 0) {
+        return `${radius} is not a valid radius. Radius parameter must be an integer greater than 0.`
+      }
+    
+      if (!Number(zipcode)) {
+        return `${zipcode} is not a valid zipcode. Zipcode parameter must be an integer.`
+      }
+      return null
+}
+
 module.exports = {
     connection,
     DEFAULT_RADIUS,
-    getTableName
+    getTableName,
+    testParamsError
 }

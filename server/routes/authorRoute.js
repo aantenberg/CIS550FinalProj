@@ -1,7 +1,8 @@
+// GET: author/:type
 const author = async function(req, res) {
   
   const names = 'Andrew Antenberg, Rachel Ko, Thomas Urey, and Natalie Rosenbaum';
-  const pennKeys = 'aanten, , turey';
+  const pennKeys = 'aanten, rachelko, turey, natros';
 
   // checks the value of type the request parameters
   // note that parameters are required and are specified in server.js in the endpoint by a colon (e.g. /author/:type)

@@ -15,6 +15,11 @@ app.get('/author/:type', routes.author);
 app.get('/restaurants', routes.allRestaurants);
 app.get('/restaurants/:type', routes.restaurants);
 app.get('/population', routes.population)
+app.get('/closest-restaurants/:type', routes.closestRestaurants)
+app.get('/income', routes.income)
+app.get('/restaurants/:type/by-state', routes.restaurantsByState)
+app.get('/income/by-state', routes.incomeByState)
+app.get('/restaurants/:type/per-capita', routes.restaurantsPerCapita)
 
 
 // app.get('/random', routes.random);

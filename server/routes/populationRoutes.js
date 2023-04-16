@@ -1,23 +1,16 @@
-const { connection, DEFAULT_RADIUS } = require('./routesCore.js')
+const { connection, DEFAULT_RADIUS, testParamsError } = require('./routesCore.js')
 
+// GET: /population
+// Return Schema: { numPeople (int) }
 const population = async function (req, res) {
   const radius = req.query.radius ?? DEFAULT_RADIUS
   const zipcode = req.query.zipcode
 
-  if (!zipcode) {
-    res.status(400).send('Zipcode query parameter required')
-    return
-  }
-
-  if (!Number(radius) || Number(radius) < 0) {
-    res.status(400).send(`${radius} is not a valid radius. Radius parameter must be an integer greater than 0.`)
-    return
-  }
-
-  if (!Number(zipcode)) {
-    res.status(400).send(`${zipcode} is not a valid zipcode. Zipcode parameter must be an integer.`)
-    return
-  }
+  const error = testParamsError(zipcode, radius)
+    if (error) {
+      res.status(400).send(error)
+      return
+    }
 
   connection.query(`  
   WITH InitialLocation AS (
@@ -38,7 +31,7 @@ const population = async function (req, res) {
         (SELECT initial_lng FROM InitialLocation) + ${radius / 52}
     )
   )
-  SELECT SUM(numPeople) AS totalPopulation
+  SELECT SUM(numPeople) AS numPeople
   FROM LooseEstimate
   WHERE (69 * DEGREES(
     ACOS(
@@ -53,8 +46,10 @@ const population = async function (req, res) {
     if (err) {
       console.log(err);
       res.status(400).send(`Error in query evaluation: ${err}`);
+    } else if (data.length === 0) {
+      res.status(400).send('No data found.');
     } else {
-      res.json(data);
+      res.json(data[0]);
     }
   });
 }
