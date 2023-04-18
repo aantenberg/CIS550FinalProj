@@ -1,7 +1,7 @@
 const { connection, getTableName, testParamsError, DEFAULT_RADIUS } = require('./routesCore')
 
 // GET: /closest-restaurants/:type
-// Return Schema: [{ distanceInKm (float), name (string), latitude (float), longitude (float), zipcode (int) }]
+// Return Schema: [{ distanceIn<o;es (float), name (string), latitude (float), longitude (float), zipcode (int) }]
 const closestRestaurants = async function(req, res) {
   const restaurantType = req.params.type
   const table = getTableName(restaurantType)
@@ -28,10 +28,10 @@ const closestRestaurants = async function(req, res) {
   SELECT (69 * DEGREES(ACOS(COS(RADIANS((SELECT initial_lat FROM InitialLocation))) 
   * COS(RADIANS(latitude)) * 
   COS(RADIANS(longitude) - RADIANS((SELECT initial_long FROM InitialLocation))) +
-  SIN(RADIANS((SELECT initial_lat FROM InitialLocation))) * SIN(RADIANS(latitude)))))AS distanceInKm,
+  SIN(RADIANS((SELECT initial_lat FROM InitialLocation))) * SIN(RADIANS(latitude)))))AS distanceInMiles,
   FastFoodRestaurants.name, FastFoodRestaurants.latitude, FastFoodRestaurants.longitude, FastFoodRestaurants.zipcode
   FROM FastFoodRestaurants
-  ORDER BY distanceInKm ASC
+  ORDER BY distanceInMiles ASC
   LIMIT 0, 5;
   `, (err, data) => {
     if (err) {

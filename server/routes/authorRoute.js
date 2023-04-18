@@ -10,7 +10,6 @@ const author = async function(req, res) {
     // res.send returns data back to the requester via an HTTP response
     res.send(`Created by ${names}`);
   } else if (req.params.type === 'pennkey') {
-    // TODO (TASK 2): edit the else if condition to check if the request parameter is 'pennkey' and if so, send back response 'Created by [pennkey]'
     res.send(`Created by ${pennKeys}`)
   } else {
     // we can also send back an HTTP status code to indicate an improper request

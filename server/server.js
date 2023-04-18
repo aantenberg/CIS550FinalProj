@@ -20,16 +20,9 @@ app.get('/income', routes.income)
 app.get('/restaurants/:type/by-state', routes.restaurantsByState)
 app.get('/income/by-state', routes.incomeByState)
 app.get('/restaurants/:type/per-capita', routes.restaurantsPerCapita)
-
-
-// app.get('/random', routes.random);
-// app.get('/song/:song_id', routes.song);
-// app.get('/album/:album_id', routes.album);
-// app.get('/albums', routes.albums);
-// app.get('/album_songs/:album_id', routes.album_songs);
-// app.get('/top_songs', routes.top_songs);
-// app.get('/top_albums', routes.top_albums);
-// app.get('/search_songs', routes.search_songs);
+app.get('/restaurants/:type/within', routes.restaurantsWithin)
+app.get('/restaurants/top/:type/by-state', routes.topRestaurantsByState)
+app.get('/restaurants/fast-food/by-state/:name', routes.getSpecificRestaurantCount)
 
 app.listen(config.server_port, () => {
   console.log(`Server running at http://${config.server_host}:${config.server_port}/`)
