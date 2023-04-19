@@ -1,0 +1,15 @@
+.form-centering-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 64px;
+}
+
+.form-container {
+    width: 70%;
+    padding: var(--md-32);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

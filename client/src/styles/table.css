@@ -1,0 +1,19 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    background-color: var(--button-color);
+}
+
+td,
+th {
+    border: 1px solid var(--button-color);
+    text-align: left;
+    padding: 8px;
+}
+
+/* tr:nth-child(even) {
+
+} */

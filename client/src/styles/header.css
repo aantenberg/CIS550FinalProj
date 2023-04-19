@@ -1,0 +1,10 @@
+.navbar-container {
+    position: sticky;
+    padding-right: 16px;
+    padding-left: 16px;
+    box-shadow: 0 3px 3px 0 rgba(112, 45, 245, 0.2);
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    background-color: var(--theme-main);
+}
