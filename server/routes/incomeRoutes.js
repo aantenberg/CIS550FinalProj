@@ -31,7 +31,7 @@ const income = async function (req, res) {
         (SELECT initial_lng FROM InitialLocation) + ${radius / 52}
     )
   )
-  SELECT AVG(averageAGI) AS averageIncome
+  SELECT AVG(averageIncome) AS averageIncome
   FROM LooseEstimate
   WHERE (69 * DEGREES(
       ACOS(
@@ -66,7 +66,7 @@ const incomeByState = async function (req, res) {
   }
 
   connection.query(`
-  SELECT state, AVG (averageAGI) AS averageIncome 
+  SELECT state, AVG (averageIncome) AS averageIncome 
   FROM ZipCodeInfo 
   WHERE state = '${state}'
   `, (err, data) => {
@@ -80,7 +80,33 @@ const incomeByState = async function (req, res) {
   });
 }
 
+// GET: /income/by-zip
+// Return Schema: { averageIncome (float) }
+const incomeByZip = async function (req, res) {
+
+  const zipcode = req.query.zipcode
+  if (!zipcode) {
+    res.status(400).send(`zipcode query parameter required.`)
+    return
+  }
+
+  connection.query(`
+  SELECT averageIncome 
+  FROM ZipCodeInfo 
+  WHERE zipcode = '${zipcode}'
+  `, (err, data) => {
+    if (err) {
+      res.status(400).send(`Error in query evaluation: ${err}`);
+    } else if (data.length === 0) {
+      res.status(400).send('No data found.');
+    } else {
+      res.json(data[0]);
+    }
+  });
+}
+
 module.exports = {
   income,
-  incomeByState
+  incomeByState,
+  incomeByZip
 }

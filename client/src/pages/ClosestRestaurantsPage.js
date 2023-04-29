@@ -1,5 +1,5 @@
 import FormContainer from "../components/FormContainer";
-import { useLoaderData, useLocation, useParams } from "react-router";
+import { useLoaderData } from "react-router";
 import Table from "../components/Table";
 
 export async function closestRestaurantsLoader(props) {

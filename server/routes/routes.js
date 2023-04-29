@@ -5,10 +5,10 @@ const populationRoute = require('./populationRoutes')
 const incomeRoute = require('./incomeRoutes')
 
 const { author } = authorRoute
-const { allRestaurants, restaurants, restaurantsByState, restaurantsPerCapita, restaurantsWithin, topRestaurantsByState, getSpecificRestaurantCount } = restaurantsRoutes
+const { allRestaurants, restaurants, allRestaurantsByState, restaurantsPerCapita, restaurantsWithin, topRestaurantsByState, getSpecificRestaurantCount, getAllStates, michelinStarRestaurantsByState, singleStateRestaurants } = restaurantsRoutes
 const { closestRestaurants } = closestRestaurantsRoute
 const { population } = populationRoute
-const { income, incomeByState } = incomeRoute
+const { income, incomeByState, incomeByZip } = incomeRoute
 
 module.exports = {
   author,
@@ -17,10 +17,14 @@ module.exports = {
   population,
   closestRestaurants,
   income,
-  restaurantsByState,
+  allRestaurantsByState,
   incomeByState,
+  incomeByZip,
   restaurantsPerCapita,
   restaurantsWithin,
   topRestaurantsByState,
-  getSpecificRestaurantCount
+  getSpecificRestaurantCount,
+  getAllStates,
+  michelinStarRestaurantsByState,
+  singleStateRestaurants
 }

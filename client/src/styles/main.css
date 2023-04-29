@@ -1,7 +1,8 @@
 :root {
     --white: #FFFFFF;
     --black: #151515;
-    --theme-main: #702df5;
+    --theme-main: #7735fb;
+    --theme-secondary: #7735fb;
     --panel-color: #1D1D1D;
     --button-color: #2C2C2C;
     --item-border: rgba(255, 255, 255, 0.1);
@@ -77,11 +78,11 @@ div#root {
     padding-left: var(--md-16);
     padding-right: var(--md-16);
     align-self: center;
-    transition: all 0.2s;
+    transition: all 0.5s;
 }
 
-.little-button:hover {  
-    border: 3px solid var(--theme-main);
+.little-button:hover {
+    border: 3px solid var(--theme-secondary);
 }
 
 textarea {
@@ -156,16 +157,17 @@ p {
 
 .undecorated-link {
     text-decoration: none;
-    
 }
 
 .underline-animated {
     position: relative;
 }
+
 .underline-animated:hover::after {
     transform: scaleX(1);
     transform-origin: bottom left;
 }
+
 .underline-animated::after {
     content: '';
     position: absolute;
@@ -177,6 +179,26 @@ p {
     background-color: var(--white);
     transform-origin: bottom right;
     transition: transform 0.25s ease-out;
+}
+
+.rainbow-underline {
+    background:
+        linear-gradient(to right,
+            var(--white),
+            var(--white)),
+        linear-gradient(to right,
+            rgba(255, 0, 0, 1),
+            rgba(255, 0, 180, 1),
+            var(--theme-main));
+    background-size: 100% 2px, 0 2px;
+    background-position: 100% 100%, 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 400ms;
+
+}
+
+.rainbow-underline:hover {
+    background-size: 0 2px, 100% 2px;
 }
 
 .grow-animated {
@@ -229,4 +251,8 @@ p.quiet {
 
 .padding-32 {
     padding: 32px;
+}
+
+.map-container {
+    min-height: 300px;
 }

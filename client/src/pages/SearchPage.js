@@ -2,6 +2,7 @@ import { useState } from "react";
 import FormContainer from "../components/FormContainer";
 import LittleButton from "../components/LittleButton";
 import { useNavigate } from "react-router";
+import RestaurantMap from "../components/Map";
 
 export default function SearchPage() {
 
@@ -27,13 +28,6 @@ export default function SearchPage() {
         })
     }
 
-    const runMarketAnalysisSearch = () => {
-        navigate({
-            pathname: '/search/analysis',
-            search: `?zipcode=${zipcode}&radius=${radius}`
-        })
-    }
-
     return (
         <FormContainer>
             <h1 className="margin-bottom-32">Zip Code Search</h1>
@@ -53,8 +47,8 @@ export default function SearchPage() {
             <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
                 <LittleButton label={'All Restaurants'} onClick={runAllRestaurantsSearch} disabled={ ! isValidZipcode || ! isValidRadius} />
                 <LittleButton label={'Closest Restaurants'} onClick={runClosestRestaurantsSearch} disabled={ ! isValidZipcode} />
-                <LittleButton label={'Run Analysis'} onClick={runMarketAnalysisSearch} disabled={ ! isValidZipcode || ! isValidRadius} />
             </div>
+            <RestaurantMap />
         </FormContainer>
     )
 }

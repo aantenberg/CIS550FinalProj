@@ -62,30 +62,26 @@ const restaurants = async function (req, res) {
   });
 }
 
-// GET /restaurants/:type/by-state
-// Return Schema: { state (string), countRestaurants (int) }
-const restaurantsByState = async function (req, res) {
-  const restaurantType = req.params.type
-  const table = getTableName(restaurantType);
+// GET /restaurants/by-state/:state
+// Return Schema: { name (string), state (string), countRestaurants (int) }
+const allRestaurantsByState = async function (req, res) {
+  // const restaurantType = req.params.type
+  // const table = getTableName(restaurantType);
 
-  const state = req.query.state
+  const state = req.params.state
   if (!state) {
     res.status(400).send(`State query parameter required.`)
     return
   }
-  if (!table) {
-    res.status(400).send(`${restaurantType} is not a valid type. Type must be 'michelin-star', 'fast-food', or 'all'.`)
-    return
-  }
+  // if (!table) {
+  //   res.status(400).send(`${restaurantType} is not a valid type. Type must be 'michelin-star', 'fast-food', or 'all'.`)
+  //   return
+  // }
 
   connection.query(`
-  WITH stateZipCodes AS (
-    SELECT zipcode, state
-    FROM ZipCodeInfo
-    WHERE state = '${state}' )
-    SELECT S.state, Count(*) AS countRestaurants
-    FROM ${table} R JOIN stateZipCodes S ON R.zipcode = S.zipcode
-    GROUP BY state;
+  SELECT S.name, Count(*) As countRestaurants
+  FROM Restaurants R join StateAbbreviations S on R.state = S.abbreviation
+  WHERE S.name = '${state}'
   `, (err, data) => {
     if (err) {
       res.status(400).send(`Error in query evaluation: ${err}`);
@@ -101,7 +97,7 @@ const restaurantsByState = async function (req, res) {
 // Return Schema: { restaurantsPerCapita (int) } 
 const restaurantsPerCapita = async function (req, res) {
 
-  const state = req.query.state
+  const state = req.params.state
   if (!state) {
     res.status(400).send(`State query parameter required.`)
     return
@@ -111,20 +107,20 @@ const restaurantsPerCapita = async function (req, res) {
   // Figure out what we wanna do with that.
   connection.query(`
   WITH ZipCodesInState AS (
-    SELECT *
+    SELECT sum(numPeople) as totalNumPeople
     FROM ZipCodeInfo
     WHERE state = '${state}'
   )
-  SELECT Z.zipcode AS zipcode, COUNT(*) / Z.numPeople AS restaurantsPerCapita
-  FROM ZipCodesInState Z JOIN FastFoodRestaurants R ON Z.zipcode = R.zipcode
-  GROUP BY Z.zipcode
+  SELECT (count(*) / (SELECT totalNumPeople FROM ZipCodesInState)) AS RestaurantsPerCapita
+  FROM Restaurants R JOIN StateAbbreviations S ON R.state = S.abbreviation
+  Where S.name = '${state}'
   `, (err, data) => {
     if (err) {
       res.status(400).send(`Error in query evaluation: ${err}`);
     } else if (data.length === 0) {
       res.status(400).send('No data found.');
     } else {
-      res.json(data);
+      res.json(data[0]);
     }
   });
 }
@@ -133,12 +129,6 @@ const restaurantsPerCapita = async function (req, res) {
 // Return Schema: [{ name (string), latitude (float), longitude (float), zipcode (int) }]
 const restaurantsWithin = async function (req, res) {
 
-  const restaurantType = req.params.type
-  const table = getTableName(restaurantType);
-  if (!table) {
-    res.status(400).send(`${restaurantType} is not a valid type. Type must be 'michelin-star', 'fast-food', or 'all'.`)
-    return
-  }
   const { latitude1, longitude1, latitude2, longitude2 } = req.query
   if (!(latitude1 && longitude1 && latitude2 && longitude2)) {
     res.status(400).send('Query parameters latitude1, longitude1, latitude2, and longitude2 required')
@@ -150,9 +140,11 @@ const restaurantsWithin = async function (req, res) {
     return
   }
 
+  console.log(latitude1, latitude2, longitude1, longitude2)
+
   connection.query(`
-  SELECT name, zipcode, latitude, longitude
-  FROM ${table} AS RestaurantsTable
+  SELECT name, latitude AS lat, longitude AS lng
+  FROM Restaurants
   WHERE latitude > ${latitude1} AND latitude < ${latitude2} 
   AND longitude > ${longitude1} AND longitude < ${longitude2}
   `, (err, data) => {
@@ -164,34 +156,32 @@ const restaurantsWithin = async function (req, res) {
   });
 }
 
-// GET /restaurants/top/:type/by-state
+// NOTE: THIS QUERY IS JUST FOR RETURNING TOP 5 FAST FOOD RESTAURANTS PER STATE
+// GET /restaurants/by-state/top/:state
 // Return Schema: [{ name (string), latitude (float), longitude (float), zipcode (int) }]
 const topRestaurantsByState = async function (req, res) {
-  const restaurantType = req.params.type
-  const table = getTableName(restaurantType);
-  if (!table) {
-    res.status(400).send(`${restaurantType} is not a valid type. Type must be 'michelin-star', 'fast-food', or 'all'.`)
-    return
-  }
-  const state = req.query.state
+  
+  const state = req.params.state
   if (!state) {
-    res.status(400).send('Query parameter state is required.')
+    res.status(400).send(`State query parameter required.`)
+    return
   }
 
   connection.query(`
-  SELECT name, COUNT(*) AS num_of_restaurants
-  FROM ${table} AS F join ZipCodeInfo Z on F.zipcode = Z.zipcode
-  WHERE state = '${state}'
-  GROUP BY name
-  ORDER BY num_of_restaurants DESC
-  LIMIT 0, 5
+  SELECT S.name, R.name, Count(*) As countRestaurants
+  FROM Restaurants R join StateAbbreviations S on R.state = S.abbreviation
+  WHERE S.name = '${state}'
+  GROUP BY R.name
+  ORDER BY countRestaurants DESC
+  LIMIT 0,5
   `, (err, data) => {
     if (err) {
       res.status(400).send(`Error in query evaluation: ${err}`);
     } else {
       res.json(data);
     }
-  });
+  }); 
+
 }
 
 // GET /restaurants/fast-food/by-state/:name
@@ -211,8 +201,8 @@ const getSpecificRestaurantCount = async function (req, res) {
   )
   SELECT name, Count(*) AS countSpecificRestaurant
   FROM FastFoodRestaurants R JOIN ZipCodesInState S on R.zipcode = S.zipcode
-  WHERE name = '${restaurantName}
-  GROUP BY name'
+  WHERE name = '${restaurantName}'
+  GROUP BY name
   `, (err, data) => {
     if (err) {
       res.status(400).send(`Error in query evaluation: ${err}`);
@@ -224,12 +214,96 @@ const getSpecificRestaurantCount = async function (req, res) {
   });
 }
 
+// GET /all/states
+// Return Schema: { state (string) }
+const getAllStates = async function (req, res) {
+  
+  connection.query(`
+  SELECT distinct State
+  FROM ZipCodeInfo
+  `, (err, data) => {
+    if (err) {
+      res.status(400).send(`Error in query evaluation: ${err}`);
+    } else if (data.length === 0) {
+      res.status(400).send('No data found in query evaluation.')
+    } else {
+      res.json(data);
+    }
+  });
+}
+
+const michelinStarRestaurantsByState = async function (req, res) {
+  // const restaurantType = req.params.type
+  // const table = getTableName(restaurantType);
+
+  const state = req.params.state
+  if (!state) {
+    res.status(400).send(`State query parameter required.`)
+    return
+  }
+
+  connection.query(`
+  WITH ZipCodesInState AS (
+    SELECT *
+    FROM ZipCodeInfo
+    WHERE state = '${state}'
+  )
+SELECT count(*) As countRestaurants
+FROM MichelinStarRestaurants
+WHERE zipcode IN (Select zipcode FROm ZipCodesInState)
+  `, (err, data) => {
+    if (err) {
+      res.status(400).send(`Error in query evaluation: ${err}`);
+    } else if (data.length === 0) {
+      res.status(400).send('No data found.');
+    } else {
+      res.json(data[0]);
+    }
+  });
+}
+
+const singleStateRestaurants = async function (req, res) {
+  // const restaurantType = req.params.type
+  // const table = getTableName(restaurantType);
+
+  const state = req.params.state
+  if (!state) {
+    res.status(400).send(`State query parameter required.`)
+    return
+  }
+
+  connection.query(`
+  WITH SingleStateRestaurants AS (
+    SELECT state, name, COUNT(longitude) AS location_count
+    FROM Restaurants
+    GROUP BY name
+    HAVING COUNT(DISTINCT state) = 1)
+SELECT A.name, S.name, location_count
+FROM SingleStateRestaurants S JOIN StateAbbreviations A on S.state = A.abbreviation
+WHERE A.name = '${state}'
+ORDER BY location_count DESC
+LIMIT 0, 5 
+  `, (err, data) => {
+    if (err) {
+      res.status(400).send(`Error in query evaluation: ${err}`);
+    } else if (data.length === 0) {
+      res.status(400).send('No data found.');
+    } else {
+      res.json(data);
+    }
+  });
+}
+
+
 module.exports = {
   allRestaurants,
   restaurants,
-  restaurantsByState,
+  allRestaurantsByState,
   restaurantsPerCapita,
   restaurantsWithin,
   topRestaurantsByState,
-  getSpecificRestaurantCount
+  getSpecificRestaurantCount,
+  getAllStates,
+  michelinStarRestaurantsByState,
+  singleStateRestaurants
 }

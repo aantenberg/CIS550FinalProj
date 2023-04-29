@@ -1,7 +1,7 @@
-.speech-bubble {
+.speech-bubble, .speech-bubble-right {
   margin: 30px;
   position: relative;
-  background: var(--theme-main);
+  background: var(--theme-secondary);
   color: #FFFFFF;
   font-size: 20px;
   text-align: center;
@@ -15,12 +15,28 @@
   width: 0;
   z-index: 1;
   border-style: solid;
-  border-color: transparent var(--theme-main);
+  border-color: transparent var(--theme-secondary);
   border-width: 20px 20px 20px 0;
   top: 50%;
   left: -20px;
   margin-top: -20px;
 }
+
+
+.speech-bubble-right:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-style: solid;
+    border-color: transparent var(--theme-secondary);
+    border-width: 20px 0 20px 20px;
+    top: 50%;
+    right: -20px;
+    margin-top: -20px;
+}
+
 
 section {
   height: 100vh;
@@ -55,5 +71,5 @@ section {
 }
 
 .card-text {
-  font-size: 40px
+  font-size: 40px;
 }

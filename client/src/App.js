@@ -11,6 +11,8 @@ import RootPage from "./pages/RootPage";
 import AnalysisHomePage from "./pages/AnalysisHomePage"
 import AnalysisPage, { analysisLoader } from "./pages/AnalysisPage";
 import ClosestRestaurantsPage, {closestRestaurantsLoader} from "./pages/ClosestRestaurantsPage"
+import RankingsPage, { rankingsLoader } from "./pages/RankingsPage";
+import RankingsHomePage from "./pages/RankingsHomePage";
 
 const router = createBrowserRouter([
     {
@@ -19,7 +21,7 @@ const router = createBrowserRouter([
         errorElement: null,
         children: [
             {
-                path: '/search',
+                path: '/',
                 element: <SearchPage />,
             },
             {
@@ -40,7 +42,18 @@ const router = createBrowserRouter([
                 path: '/analyze',
                 element: <AnalysisPage />,
                 loader: analysisLoader
+            },
+            {
+                path: '/state-rankings/home',
+                element: <RankingsHomePage />,
+            },
+            {
+                path: '/state-rankings',
+                element: <RankingsPage />,
+                loader: rankingsLoader
             }
+        
+
 
         ]
     }
