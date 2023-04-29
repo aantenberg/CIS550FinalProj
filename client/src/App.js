@@ -8,6 +8,8 @@ import SearchPage from "./pages/SearchPage";
 import Header from "./components/Header";
 import AllRestaurantsPage, { allRestaurantsLoader } from "./pages/AllRestaurantsPage";
 import RootPage from "./pages/RootPage";
+import ClosestRestaurantsPage, { closestRestaurantsLoader } from "./pages/ClosestRestaurantsPage";
+import MarketAnalysisPage, { marketAnalysisLoader } from "./pages/MarketAnalysisPage";
 
 const router = createBrowserRouter([
     {
@@ -24,7 +26,16 @@ const router = createBrowserRouter([
                 element: <AllRestaurantsPage />,
                 loader: allRestaurantsLoader
             },
-
+            {
+                path: '/search/closest',
+                element: <ClosestRestaurantsPage />,
+                loader: closestRestaurantsLoader
+            },
+            {
+                path: '/search/analysis',
+                element: <MarketAnalysisPage />,
+                loader: marketAnalysisLoader
+            }
         ]
     }
 ])

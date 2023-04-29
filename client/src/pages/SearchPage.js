@@ -20,6 +20,20 @@ export default function SearchPage() {
         })
     }
 
+    const runClosestRestaurantsSearch = () => {
+        navigate({
+            pathname: '/search/closest',
+            search: `?zipcode=${zipcode}`
+        })
+    }
+
+    const runMarketAnalysisSearch = () => {
+        navigate({
+            pathname: '/search/analysis',
+            search: `?zipcode=${zipcode}&radius=${radius}`
+        })
+    }
+
     return (
         <FormContainer>
             <h1 className="margin-bottom-32">Zip Code Search</h1>
@@ -38,8 +52,8 @@ export default function SearchPage() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
                 <LittleButton label={'All Restaurants'} onClick={runAllRestaurantsSearch} disabled={ ! isValidZipcode || ! isValidRadius} />
-                <LittleButton label={'Closest Restaurants'} disabled={ ! isValidZipcode} />
-                <LittleButton label={'Potential'} disabled={ ! isValidZipcode || ! isValidRadius} />
+                <LittleButton label={'Closest Restaurants'} onClick={runClosestRestaurantsSearch} disabled={ ! isValidZipcode} />
+                <LittleButton label={'Run Analysis'} onClick={runMarketAnalysisSearch} disabled={ ! isValidZipcode || ! isValidRadius} />
             </div>
         </FormContainer>
     )

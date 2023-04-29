@@ -3,8 +3,8 @@ export default function Table(props) {
         <table>
             <tr>
                 {
-                    props.schema.map(header => (
-                        <th><p className="emphasis">{header}</p></th>
+                    props.schema.map(([headerName, _]) => (
+                        <th><p className="emphasis">{headerName}</p></th>
                     )) 
                 }
             </tr>
@@ -12,8 +12,8 @@ export default function Table(props) {
                 props.data.map(row => (
                     <tr>
                         {
-                            Object.values(row).map(item => (
-                                <td><p>{item}</p></td>
+                            props.schema.map(([_, headerKey]) => (
+                                <td><p>{row[headerKey]}</p></td>
                             ))
                         }
                     </tr>

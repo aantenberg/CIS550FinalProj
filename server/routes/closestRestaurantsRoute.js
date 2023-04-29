@@ -29,8 +29,8 @@ const closestRestaurants = async function(req, res) {
   * COS(RADIANS(latitude)) * 
   COS(RADIANS(longitude) - RADIANS((SELECT initial_long FROM InitialLocation))) +
   SIN(RADIANS((SELECT initial_lat FROM InitialLocation))) * SIN(RADIANS(latitude)))))AS distanceInMiles,
-  FastFoodRestaurants.name, FastFoodRestaurants.latitude, FastFoodRestaurants.longitude, FastFoodRestaurants.zipcode
-  FROM FastFoodRestaurants
+  R.name, R.latitude, R.longitude, R.hours
+  FROM Restaurants R
   ORDER BY distanceInMiles ASC
   LIMIT 0, 5;
   `, (err, data) => {
