@@ -8,8 +8,9 @@ import SearchPage from "./pages/SearchPage";
 import Header from "./components/Header";
 import AllRestaurantsPage, { allRestaurantsLoader } from "./pages/AllRestaurantsPage";
 import RootPage from "./pages/RootPage";
-import ClosestRestaurantsPage, { closestRestaurantsLoader } from "./pages/ClosestRestaurantsPage";
-import MarketAnalysisPage, { marketAnalysisLoader } from "./pages/MarketAnalysisPage";
+import AnalysisHomePage from "./pages/AnalysisHomePage"
+import AnalysisPage, { analysisLoader } from "./pages/AnalysisPage";
+import ClosestRestaurantsPage, {closestRestaurantsLoader} from "./pages/ClosestRestaurantsPage"
 
 const router = createBrowserRouter([
     {
@@ -32,10 +33,15 @@ const router = createBrowserRouter([
                 loader: closestRestaurantsLoader
             },
             {
-                path: '/search/analysis',
-                element: <MarketAnalysisPage />,
-                loader: marketAnalysisLoader
+                path: '/analyze/home',
+                element: <AnalysisHomePage />
+            },
+            {
+                path: '/analyze',
+                element: <AnalysisPage />,
+                loader: analysisLoader
             }
+
         ]
     }
 ])

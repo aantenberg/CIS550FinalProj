@@ -54,6 +54,35 @@ const population = async function (req, res) {
   });
 }
 
+// GET: /population/singleZip
+// Return Schema: { numPeople (int) }
+const populationOneZipCode = async function (req, res) {
+  const zipcode = req.query.zipcode
+
+  const error = testParamsError(zipcode, null)
+    if (error) {
+      res.status(400).send(error)
+      return
+    }
+
+  connection.query(`  
+  SELECT numPeople
+  FROM ZipCodeInfo
+  WHERE zipcode = ${zipcode};
+  
+  `, (err, data) => {
+    if (err) {
+      console.log(err);
+      res.status(400).send(`Error in query evaluation: ${err}`);
+    } else if (data.length === 0) {
+      res.status(400).send('No data found.');
+    } else {
+      res.json(data[0]);
+    }
+  });
+}
+
 module.exports = {
-  population
+  population,
+  populationOneZipCode
 }

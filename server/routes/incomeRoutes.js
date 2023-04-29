@@ -55,6 +55,8 @@ const income = async function (req, res) {
 }
 
 // GET: /income/by-state
+// Return Schema: { state (string), averageIncome (float) }
+// TODO: Check if this has same problem as other
 const incomeByState = async function (req, res) {
 
   const state = req.query.state

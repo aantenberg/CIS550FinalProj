@@ -10,8 +10,8 @@ export default function SearchPage() {
     const [zipcode, setZipcode] = useState('')
     const [radius, setRadius] = useState('')
 
-    const isValidZipcode = ( ! Number.isNaN(+zipcode)) && zipcode.length === 5
-    const isValidRadius = ( ! Number.isNaN(+radius)) && radius.length > 0 && Number.parseFloat(radius) > 0
+    const isValidZipcode = (!Number.isNaN(+zipcode)) && zipcode.length === 5
+    const isValidRadius = (!Number.isNaN(+radius)) && radius.length > 0 && Number.parseFloat(radius) > 0
 
     const runAllRestaurantsSearch = () => {
         navigate({

@@ -1,0 +1,59 @@
+.speech-bubble {
+  margin: 30px;
+  position: relative;
+  background: var(--theme-main);
+  color: #FFFFFF;
+  font-size: 20px;
+  text-align: center;
+  border-radius: 20px;
+  padding: 20px 10px 40px 10px;
+}
+.speech-bubble:after {
+  content: '';
+  position: absolute;
+  display: block;
+  width: 0;
+  z-index: 1;
+  border-style: solid;
+  border-color: transparent var(--theme-main);
+  border-width: 20px 20px 20px 0;
+  top: 50%;
+  left: -20px;
+  margin-top: -20px;
+}
+
+section {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always
+}
+
+.scroll-container {
+  scroll-snap-type: y mandatory;
+  height: 100vh;
+  overflow-y: scroll;
+}
+
+.bordered-card {
+  background-color: var(--panel-color);
+  border-radius: 20px;
+  padding: 30px;
+  border: solid;
+  border-color: white;
+  border-width: 5px;
+}
+
+.center-text {
+  text-align: center
+}
+
+.emoji-icon {
+  font-size: 84px
+}
+
+.card-text {
+  font-size: 40px
+}
