@@ -13,3 +13,15 @@
     flex-direction: column;
     justify-content: center;
 }
+
+.absolute-form-container {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    background-color: var(--panel-color);
+    border-radius: var(--item-radius);
+}

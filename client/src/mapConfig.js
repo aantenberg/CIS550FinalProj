@@ -77,6 +77,15 @@ const MapStyles = [
         elementType: "labels.text.stroke",
         stylers: [{ color: "#17263c" }],
     },
+    {
+        featureType: "poi",
+        stylers: [{ visibility: "off" }],
+    },
+    {
+        featureType: "transit",
+        elementType: "labels.icon",
+        stylers: [{ visibility: "off" }],
+    },
 ]
 
 module.exports = { MapStyles }

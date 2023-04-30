@@ -4,7 +4,7 @@ import { Wrapper, Status } from '@googlemaps/react-wrapper'
 import { createCustomEqual } from "fast-equals"
 import { isLatLngLiteral } from "@googlemaps/typescript-guards"
 
-export default function RestaurantMap() {
+export default function RestaurantMap({ center }) {
 
     const defaultLocation = {
         lat: 38.648785,
@@ -21,17 +21,16 @@ export default function RestaurantMap() {
     }
 
     const render = (status) => {
-        console.log(status)
         switch (status) {
             case Status.LOADING:
                 return <p>Loading...</p>
             case Status.FAILURE:
                 return <p>{`Failed to load google maps`}</p>
             case Status.SUCCESS:
-                console.log('rendering map')
                 return (
-                    <LocationInputMap
+                    <Map
                         onBoundsChanged={runBoundedRestaurantsSearch}
+                        searchedCenter={center}
                         center={defaultLocation}
                         zoom={12}
                         streetViewControl={false}
@@ -44,7 +43,7 @@ export default function RestaurantMap() {
                                 <MapMarker key={index} position={position} />
                             ))
                         }
-                    </LocationInputMap>
+                    </Map>
                 )
             default:
                 console.error('invalid map state')
@@ -54,18 +53,17 @@ export default function RestaurantMap() {
 
 
     return (
-        <Wrapper apiKey={'AIzaSyBCdOph1FqRHjuTRwy3P0zp4-zoiqeZYz8'} render={render} />
+        <Wrapper apiKey={'AIzaSyC2C8b0d417bYDpHxIbsYZgJrT0hRC4TZc'} render={render} />
     )
 }
 
-const LocationInputMap = ({
+const Map = ({
     onBoundsChanged,
+    searchedCenter,
     children,
     style,
     ...options
 }) => {
-
-    console.log('re-rendering map')
 
     const ref = useRef(null)
     const [map, setMap] = useState(undefined)
@@ -88,24 +86,31 @@ const LocationInputMap = ({
 
     const moveToUserLocation = (location) => {
         if (!location) { return }
+        console.log(JSON.stringify(location))
         map?.panTo({ lat: location.coords.latitude, lng: location.coords.longitude })
     }
 
+    useEffect(() => {
+        moveToUserLocation({ coords: searchedCenter })
+    }, [searchedCenter])
+
     return (
-        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
-            <button onClick={() => getLocation().then(loc => moveToUserLocation(loc.position))}>Locate Me</button>
-            <div style={{ position: 'relative' }}>
-                <div className='map-container' ref={ref} id='map'>
-                    {
-                        React.Children.map(children, (child) => {
-                            if (React.isValidElement(child)) {
-                                // set the map prop on the child component
-                                // @ts-ignore
-                                return React.cloneElement(child, { map });
-                            }
-                        })
-                    }
-                </div>
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}>
+            <div className='map-container' ref={ref} id='map'>
+                {
+                    React.Children.map(children, (child) => {
+                        if (React.isValidElement(child)) {
+                            // set the map prop on the child component
+                            // @ts-ignore
+                            return React.cloneElement(child, { map });
+                        }
+                    })
+                }
+            </div>
+            <div id='my-location-container' onClick={() => getLocation().then(loc => moveToUserLocation(loc.position))}>
+                <span class="material-symbols-outlined">
+                    my_location
+                </span>
             </div>
         </div>
     )
@@ -124,9 +129,19 @@ const getLocation = async () => {
 const MapMarker = (options) => {
     const [marker, setMarker] = useState()
 
+    const image = {
+        url: require('../assets/map-marker.png'),
+        size: new window.google.maps.Size(32, 32),
+        origin: new window.google.maps.Point(0, 0),
+        anchor: new window.google.maps.Point(4, 4),
+        scaledSize: new window.google.maps.Size(8, 8)
+    }
+
     useEffect(() => {
         if (!marker) {
-            setMarker(new window.google.maps.Marker())
+            setMarker(new window.google.maps.Marker({
+                icon: image
+            }))
         }
 
         return () => {
@@ -136,7 +151,7 @@ const MapMarker = (options) => {
         }
     }, [marker])
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (marker) {
             marker.setOptions(options)
         }

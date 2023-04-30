@@ -3,12 +3,14 @@ const restaurantsRoutes = require('./restaurantsRoutes')
 const closestRestaurantsRoute = require('./closestRestaurantsRoute')
 const populationRoute = require('./populationRoutes')
 const incomeRoute = require('./incomeRoutes')
+const locationRoute = require('./locationRoute')
 
 const { author } = authorRoute
 const { allRestaurants, restaurants, allRestaurantsByState, restaurantsPerCapita, restaurantsWithin, topRestaurantsByState, getSpecificRestaurantCount, getAllStates, michelinStarRestaurantsByState, singleStateRestaurants } = restaurantsRoutes
 const { closestRestaurants } = closestRestaurantsRoute
 const { population } = populationRoute
 const { income, incomeByState, incomeByZip } = incomeRoute
+const { locationForZipcode } = locationRoute
 
 module.exports = {
   author,
@@ -26,5 +28,6 @@ module.exports = {
   getSpecificRestaurantCount,
   getAllStates,
   michelinStarRestaurantsByState,
-  singleStateRestaurants
+  singleStateRestaurants,
+  locationForZipcode
 }

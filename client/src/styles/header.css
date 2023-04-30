@@ -1,7 +1,8 @@
 .navbar-container {
     position: sticky;
-    padding-right: 16px;
-    padding-left: 16px;
+    padding: 16px;
+    padding-top: 22px;
+    padding-bottom: 22px;
     box-shadow: 0 3px 3px 0 rgba(112, 45, 245, 0.2);
     display: flex;
     justify-content: flex-start;

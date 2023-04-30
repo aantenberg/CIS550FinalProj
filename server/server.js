@@ -27,6 +27,7 @@ app.get('/restaurants/fast-food/by-state/:name', routes.getSpecificRestaurantCou
 app.get('/all/states', routes.getAllStates)
 app.get('/restaurants/michelin/by-state/:state', routes.michelinStarRestaurantsByState)
 app.get('/restaurants/single-state/:state', routes.singleStateRestaurants)
+app.get('/location', routes.locationForZipcode)
 
 
 // TODO: Create temporary table here
