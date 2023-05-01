@@ -199,10 +199,18 @@ const MapMarker = (options) => {
         scaledSize: new window.google.maps.Size(8, 8)
     }
 
+    const michelinImage = {
+        url: require('../assets/map-marker-michelin.png'),
+        size: new window.google.maps.Size(32, 32),
+        origin: new window.google.maps.Point(0, 0),
+        anchor: new window.google.maps.Point(4, 4),
+        scaledSize: new window.google.maps.Size(8, 8)
+    }
+
     useEffect(() => {
         if (!marker) {
             const newMarker = new window.google.maps.Marker({
-                icon: image
+                icon: options.position.num_stars == null ? image : michelinImage
             })
             setMarker(newMarker)
         }
@@ -217,6 +225,7 @@ const MapMarker = (options) => {
     useEffect(() => {
         if (marker) {
             marker.setOptions(options)
+            marker.setIcon(options.position.num_stars == null ? image : michelinImage)
 
             if (listeners) {
                 listeners.forEach(listener => window.google.maps.event.removeListener(listener))

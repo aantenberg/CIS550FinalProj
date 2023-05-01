@@ -132,18 +132,6 @@ export default function SearchPage() {
         setDidError(false)
         setSearchedCenter(newCenter)
         setClosestRestaurants(closestRestaurants)
-
-        for (const restaurant of closestRestaurants) {
-            if (restaurant.numStars == null) {
-                continue
-            }
-
-            const starString = '⭐️'.repeat(restaurant.numStars)
-
-            restaurant.name += ` (${starString})`
-        }
-
-        console.log(closestRestaurants)
     }
 
     return (
