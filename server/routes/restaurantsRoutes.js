@@ -182,7 +182,7 @@ const restaurantsInZipcode = async function (req, res) {
       SELECT R.name, R.latitude, R.longitude, Z.zipcode, ABS(R.longitude - Z.longitude) + ABS(R.latitude - Z.latitude) AS distance
       FROM RestaurantsWithHash R JOIN ClosestZipCodes Z ON R.location_hash = Z.location_hash
   ), RestaurantsWithZipcode AS (
-      SELECT D.name, D.latitude, D.longitude, D.zipcode, min_distance
+      SELECT D.name, D.latitude, D.longitude, D.zipcode
       FROM Distances D JOIN (
           SELECT name, latitude, longitude, MIN(distance) AS min_distance
           FROM Distances
