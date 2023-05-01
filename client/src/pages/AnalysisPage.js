@@ -1,4 +1,5 @@
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { formatZipcode } from "../helpers/formatter";
 import AnalysisTextGenerator from "../helpers/analysisTextGenerators";
 import React from "react";
@@ -15,6 +16,10 @@ export async function analysisLoader(props) {
 
   const zipcode = params.get('zipcode')
 
+  if (!zipcode) {
+    return {data: null, error: 'No zipcode provided'}
+  }
+
   const urlIsInvalid =
     !zipcode ||
     zipcode.length !== 5 ||
@@ -27,43 +32,63 @@ export async function analysisLoader(props) {
 
   const parsedZipcode = Number.parseInt(zipcode)
 
-  // TODO: Fetch all the data needed for analysis, and HANDLE ERRORS
   const incomeResult = await fetch(`http://${config.server_host}:${config.server_port}/income/by-zip?zipcode=${zipcode}`)
   if (incomeResult.status !== 200) {
     console.log('Failed to get income results')
-    return {}
+    return null
   }
   const incomeData = await incomeResult.json()
 
   const populationResult = await fetch(`http://${config.server_host}:${config.server_port}/population?zipcode=${zipcode}`)
   if (populationResult.status !== 200) {
     console.log('failed to get population results')
-    return {}
+    return null
   }
   const populationData = await populationResult.json()
 
   const michelinRestaurantsResult = await fetch(`http://${config.server_host}:${config.server_port}/restaurants/michelin-star?zipcode=${zipcode}`)
   if (michelinRestaurantsResult.status !== 200) {
     console.log('Failed to get michelin star results')
-    return {}
+    return null
   }
   const michelinRestaurants = await michelinRestaurantsResult.json()
 
   const fastFoodRestaurantsResult = await fetch(`http://${config.server_host}:${config.server_port}/restaurants/fast-food?zipcode=${zipcode}`)
   if (fastFoodRestaurantsResult.status !== 200) {
     console.log('Failed to get fast food results')
-    return {}
+    return null
   }
   const fastFoodRestaurants = await fastFoodRestaurantsResult.json()
 
-  return { ...incomeData, michelinRestaurants, fastFoodRestaurants, population: populationData.numPeople, query: { zipcode: parsedZipcode } }
+  const totalRestaurantsInZipcodeResult = await fetch(`http://${config.server_host}:${config.server_port}/restaurants-in-zipcode?zipcode=${zipcode}`)
+  if (totalRestaurantsInZipcodeResult.status !== 200) {
+    console.log('Failed to get total restaurants results.')
+    return null
+  }
+  const totalRestaurantsInZipCode = await totalRestaurantsInZipcodeResult.json()
+
+  const totalRestaurantsResult = await fetch(`http://${config.server_host}:${config.server_port}/restaurants?zipcode=${zipcode}`)
+  if (totalRestaurantsResult.status !== 200) {
+    console.log('Failed to get total restaurants results.')
+    return null
+  }
+  const totalRestaurants = await totalRestaurantsResult.json()
+
+  return { ...incomeData, michelinRestaurants, fastFoodRestaurants, totalRestaurants, totalRestaurantsInZipCode, population: populationData.numPeople, query: { zipcode: parsedZipcode }, error: null }
 }
 
 
 export default function AnalysisPage() {
 
   const data = useLoaderData()
+  const navigate = useNavigate()
 
+  useEffect(() => {
+    if (data && data.error) {
+      navigate('/analyze/home')
+      return
+    }
+  }, [])
   if (!data) {
     return (
       <div className="center-text">
@@ -75,17 +100,23 @@ export default function AnalysisPage() {
       </div>
     )
   }
+
+  if (data.error) {
+    return null
+  }
+
+
   const zipcode = formatZipcode(data.query.zipcode)
   const averageIncome = 52517.07489561993
   const incomeNum = Number(data.averageIncome)
   const population = Number(data.population)
   const averagePopulation = 118123.883775
 
-  const generator = new AnalysisTextGenerator(zipcode, incomeNum, averageIncome, population, data.michelinRestaurants, data.fastFoodRestaurants, averagePopulation)
+  const generator = new AnalysisTextGenerator(zipcode, incomeNum, averageIncome, population, data.michelinRestaurants, data.fastFoodRestaurants, averagePopulation, data.totalRestaurantsInZipCode, data.totalRestaurants)
 
   return (
     <div className="scroll-container">
-      <section className="one">
+      <section>
         <div style={{ width: '70%' }}>
           <img src={require('../assets/hungertap.webp')} alt="hungerbot" width={200} style={{ marginBottom: -5 }} />
           <div className="center-text bordered-card">
@@ -98,6 +129,9 @@ export default function AnalysisPage() {
       {generator.generatePopulationText()}
       {generator.generateMichelinStarText()}
       {generator.generateFastFoodText()}
+      {generator.generateIncomePerRestaurantText()}
+      {generator.generateTotalRestaurantsText()}
+      {generator.generateFinalText()}
     </div>
 
   )

@@ -12,12 +12,37 @@ export default function RestaurantMap({ center }) {
     }
 
     const [restaurantPositions, setRestaurantPositions] = useState([])
+    const [tooltipOptions, setTooltipOptions] = useState(null)
 
     const runBoundedRestaurantsSearch = async (mapBounds) => {
         const query = `http://localhost:8080/restaurants-within?latitude1=${mapBounds.south}&latitude2=${mapBounds.north}&longitude1=${mapBounds.west}&longitude2=${mapBounds.east}`
         const results = await fetch(query)
-        const obj = await results.json()
-        setRestaurantPositions(obj)
+        const restaurants = await results.json()
+
+        for (const restaurant of restaurants) {
+
+            if (restaurant.num_stars == null) {
+                continue
+            }
+
+            if (restaurant.name === 'North Pond') {
+                console.log(restaurant)
+            }
+
+            const starString = '⭐️'.repeat(restaurant.num_stars)
+
+            restaurant.name += ` (${starString})`
+        }
+
+        setRestaurantPositions(restaurants)
+    }
+
+    const onMarkerMouseover = (obj) => {
+        setTooltipOptions(obj)
+    }
+
+    const onMarkerMouseout = () => {
+        setTooltipOptions(null)
     }
 
     const render = (status) => {
@@ -30,6 +55,8 @@ export default function RestaurantMap({ center }) {
                 return (
                     <Map
                         onBoundsChanged={runBoundedRestaurantsSearch}
+                        onTooltipMouseover={onMarkerMouseout}
+                        tooltipOptions={tooltipOptions}
                         searchedCenter={center}
                         center={defaultLocation}
                         zoom={12}
@@ -40,7 +67,12 @@ export default function RestaurantMap({ center }) {
                     >
                         {
                             restaurantPositions?.map((position, index) => (
-                                <MapMarker key={index} position={position} />
+                                <MapMarker 
+                                    key={index} 
+                                    position={position} 
+                                    onMarkerMouseover={onMarkerMouseover}
+                                    onMarkerMouseout={onMarkerMouseout}
+                                />
                             ))
                         }
                     </Map>
@@ -59,6 +91,8 @@ export default function RestaurantMap({ center }) {
 
 const Map = ({
     onBoundsChanged,
+    onTooltipMouseover,
+    tooltipOptions,
     searchedCenter,
     children,
     style,
@@ -67,6 +101,8 @@ const Map = ({
 
     const ref = useRef(null)
     const [map, setMap] = useState(undefined)
+    const [tooltipLocation, setTooltipLocation] = useState(null)
+    const [tooltipText, setTooltipText] = useState('')
 
     useEffect(() => {
         if (ref.current && !map) {
@@ -80,19 +116,32 @@ const Map = ({
 
     useDeepCompareEffectForMaps(() => {
         if (map) {
-            map.setOptions(options);
+            map.setOptions(options)
         }
-    }, [map, options]);
+    }, [map, options])
 
     const moveToUserLocation = (location) => {
-        if (!location) { return }
-        console.log(JSON.stringify(location))
+        if (!location || !location.coords) { return }
         map?.panTo({ lat: location.coords.latitude, lng: location.coords.longitude })
     }
 
     useEffect(() => {
         moveToUserLocation({ coords: searchedCenter })
     }, [searchedCenter])
+
+    useEffect(() => {
+
+        if ( ! tooltipOptions) {
+            setTooltipLocation(null)
+            return 
+        }
+
+        const divBounds = map.getDiv().getBoundingClientRect()
+
+        setTooltipLocation({ x: tooltipOptions.event.clientX - divBounds.left, y: tooltipOptions.event.clientY - divBounds.top })
+        setTooltipText(tooltipOptions.name)
+
+    }, [tooltipOptions])
 
     return (
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}>
@@ -108,10 +157,18 @@ const Map = ({
                 }
             </div>
             <div id='my-location-container' onClick={() => getLocation().then(loc => moveToUserLocation(loc.position))}>
-                <span class="material-symbols-outlined">
+                <span className="material-symbols-outlined">
                     my_location
                 </span>
             </div>
+            {
+                tooltipLocation ? 
+                    <div className='tooltip-container' style={{ top: tooltipLocation.y, left: tooltipLocation.x }} onMouseEnter={onTooltipMouseover}>
+                        <h4 style={{ color: 'black' }}>{tooltipText}</h4>
+                    </div>
+                    :
+                    null
+            }
         </div>
     )
 }
@@ -122,12 +179,17 @@ const getLocation = async () => {
             resolve({ position, error: null })
         }, (error) => {
             resolve({ position: null, error })
+        }, {
+            enableHighAccuracy: false,
+            timeout: 5000,
+            maximumAge: Infinity
         })
     })
 }
 
 const MapMarker = (options) => {
     const [marker, setMarker] = useState()
+    const [listeners, setListeners] = useState()
 
     const image = {
         url: require('../assets/map-marker.png'),
@@ -139,9 +201,10 @@ const MapMarker = (options) => {
 
     useEffect(() => {
         if (!marker) {
-            setMarker(new window.google.maps.Marker({
+            const newMarker = new window.google.maps.Marker({
                 icon: image
-            }))
+            })
+            setMarker(newMarker)
         }
 
         return () => {
@@ -154,6 +217,22 @@ const MapMarker = (options) => {
     useEffect(() => {
         if (marker) {
             marker.setOptions(options)
+
+            if (listeners) {
+                listeners.forEach(listener => window.google.maps.event.removeListener(listener))
+            }
+
+            const newMouseoverListener = marker.addListener('mouseover', (e) => {
+                options.onMarkerMouseover({ event: e.domEvent, name: options.position.name })
+            })
+
+            const newMouseoutListener = marker.addListener('mouseout', (e) => {
+                options.onMarkerMouseout()
+            })
+
+            setListeners([newMouseoutListener, newMouseoverListener])
+
+            return () => listeners?.forEach(listener => window.google.maps.event.removeListener(listener))
         }
     }, [marker, options])
 
@@ -168,29 +247,26 @@ const deepCompareEqualsForMaps = createCustomEqual(
             isLatLngLiteral(b) ||
             b instanceof window.google.maps.LatLng
         ) {
-            return new window.google.maps.LatLng(a).equals(new window.google.maps.LatLng(b));
+            return new window.google.maps.LatLng(a).equals(new window.google.maps.LatLng(b))
         }
 
-        // TODO extend to other types
-
-        // use fast-equals for other objects
-        return deepEqual(a, b);
+        return deepEqual(a, b)
     }
-);
+)
 
 function useDeepCompareMemoize(value) {
-    const ref = React.useRef();
+    const ref = React.useRef()
 
     if (!deepCompareEqualsForMaps(value, ref.current)) {
-        ref.current = value;
+        ref.current = value
     }
 
-    return ref.current;
+    return ref.current
 }
 
 function useDeepCompareEffectForMaps(
     callback,
     dependencies
 ) {
-    useEffect(callback, dependencies.map(useDeepCompareMemoize));
+    useEffect(callback, dependencies.map(useDeepCompareMemoize))
 }

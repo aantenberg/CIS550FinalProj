@@ -15,14 +15,14 @@ connection.connect((err) => err && console.log(err));
 const DEFAULT_RADIUS = 20
 
 function getTableName(restaurantType) {
-    const michelinStarQuery = `(SELECT name, latitude, longitude, zipcode, 'MichelinStar' AS type FROM MichelinStarRestaurants)`
-    const fastFoodQuery = `(SELECT name, latitude, longitude, zipcode, 'FastFood' AS type FROM FastFoodRestaurants)`
+    const michelinStarQuery = `(SELECT name, latitude, longitude, 'MichelinStar' AS type FROM MichelinStarRestaurants)`
+    const fastFoodQuery = `(SELECT R.name, latitude, longitude, 'FastFood' AS type FROM Restaurants R JOIN FastFoodRestaurantNames N ON R.name = N.name)`
     if (restaurantType === 'michelin-star') {
         return michelinStarQuery
     } else if (restaurantType == 'fast-food') {
         return fastFoodQuery
     } else if (restaurantType == 'all') {
-        return `(${michelinStarQuery} UNION ${fastFoodQuery})`
+        return `(SELECT name, latitude, longitude, 'Restaurant' AS type FROM Restaurants)`
     }
 
     return null
@@ -31,21 +31,37 @@ function getTableName(restaurantType) {
 function testParamsError(zipcode, radius) {
     if (!zipcode) {
         return 'Zipcode query parameter required'
-      }
-    
-      if (!Number(radius) || Number(radius) < 0) {
+    }
+
+    if (!Number(radius) || Number(radius) < 0) {
         return `${radius} is not a valid radius. Radius parameter must be an integer greater than 0.`
-      }
-    
-      if (!Number(zipcode)) {
+    }
+
+    if (!Number(zipcode)) {
         return `${zipcode} is not a valid zipcode. Zipcode parameter must be an integer.`
-      }
-      return null
+    }
+    return null
 }
 
+const createTemporaryTable = function () {
+    return new Promise((resolve, reject) => {
+        connection.query(`
+        CREATE TEMPORARY TABLE IF NOT EXISTS FastFoodRestaurantNames (
+            PRIMARY KEY (name)
+        )
+        SELECT DISTINCT name
+        FROM FastFoodRestaurants;`, (err) => {
+            if (err) {
+                reject(err)
+            }
+            resolve()
+        })
+    })
+}
 module.exports = {
     connection,
     DEFAULT_RADIUS,
     getTableName,
-    testParamsError
+    testParamsError,
+    createTemporaryTable
 }

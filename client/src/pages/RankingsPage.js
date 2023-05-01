@@ -50,17 +50,36 @@ console.log(data.restaurants)
 console.log(data.perCapita)
 
   return (
+    
     <FormContainer>
-
-      <FormContainer>
-        <h1 className="margin-bottom-8">{data.query.state}</h1>
-        <p className="margin-bottom-32"> Total Number of Restaurants is: {data.restaurants.countRestaurants} </p>
-        <p className="margin-bottom-32"> Total Number of Michelin Restaurants is: {data.michelinRestaurants.countRestaurants} </p>
-        <p className="margin-bottom-32"> Average Income is: {dollarFormat(data.income.averageIncome)} </p>
-        <p className="margin-bottom-32"> Restaurants Per Capita: {data.perCapita.RestaurantsPerCapita} </p>
+<h1 className="margin-bottom-15" style ={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{data.query.state}</h1>
+        <FormContainer style={{ marginBottom: '3px' }}>
+        
+        <table style={{ color: 'white' }}>
+        <tr>
+          <th> </th>
+          <th> </th>
+        </tr>
+        <tr>
+          <td>Total Number of Restaurants is:</td>
+          <td>{data.restaurants.countRestaurants} </td>
+        </tr>
+        <tr>
+          <td>Total Number of Michelin Restaurants is:</td>
+          <td>{data.michelinRestaurants.countRestaurants} </td>
+        </tr>
+        <tr>
+          <td>Average Income is:</td>
+          <td>{dollarFormat(data.income.averageIncome)}</td>
+        </tr>
+        <tr>
+          <td>Restaurants Per Capita:</td>
+          <td>{data.perCapita.RestaurantsPerCapita}</td>
+        </tr>
+      </table>
         </FormContainer>
 
-        <FormContainer>
+        <FormContainer style={{ marginBottom: '3px' }}>
           <p className="margin-bottom-32"> Most popular Fast Food Restaurants in {data.query.state} </p> 
           <Table schema={[['Name', 'name'], ['Count', 'countRestaurants']]} data={data.fastFoodRanking}/>
         </FormContainer>

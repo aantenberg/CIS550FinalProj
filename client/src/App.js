@@ -6,11 +6,9 @@ import { createTheme } from "@mui/material/styles";
 import HomePage from "./pages/HomePage";
 import SearchPage from "./pages/SearchPage";
 import Header from "./components/Header";
-import AllRestaurantsPage, { allRestaurantsLoader } from "./pages/AllRestaurantsPage";
 import RootPage from "./pages/RootPage";
 import AnalysisHomePage from "./pages/AnalysisHomePage"
 import AnalysisPage, { analysisLoader } from "./pages/AnalysisPage";
-import ClosestRestaurantsPage, {closestRestaurantsLoader} from "./pages/ClosestRestaurantsPage"
 import RankingsPage, { rankingsLoader } from "./pages/RankingsPage";
 import RankingsHomePage from "./pages/RankingsHomePage";
 
@@ -23,16 +21,6 @@ const router = createBrowserRouter([
             {
                 path: '/',
                 element: <SearchPage />,
-            },
-            {
-                path: '/search/all',
-                element: <AllRestaurantsPage />,
-                loader: allRestaurantsLoader
-            },
-            {
-                path: '/search/closest',
-                element: <ClosestRestaurantsPage />,
-                loader: closestRestaurantsLoader
             },
             {
                 path: '/analyze/home',

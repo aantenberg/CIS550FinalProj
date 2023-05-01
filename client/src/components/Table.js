@@ -1,4 +1,12 @@
 export default function Table(props) {
+
+    const roundIfNumber = (val) => {
+        if (typeof val !== 'number') {
+            return val
+        }
+        return Math.round(val * 100) / 100
+    }
+
     return (
         <table>
             <tr>
@@ -13,7 +21,7 @@ export default function Table(props) {
                     <tr>
                         {
                             props.schema.map(([_, headerKey]) => (
-                                <td><p>{row[headerKey]}</p></td>
+                                <td><p>{roundIfNumber(row[headerKey])}</p></td>
                             ))
                         }
                     </tr>

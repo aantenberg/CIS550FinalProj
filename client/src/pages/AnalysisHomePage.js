@@ -1,16 +1,19 @@
 import { useState } from "react";
 import LittleButton from "../components/LittleButton";
 import { useNavigate } from "react-router-dom";
+import LoadingIcon from "../components/LoadingIcon";
 
 export default function AnalysisHomePage() {
 
     const [zipcode, setZipcode] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
 
 
     const isValidZipcode = (!Number.isNaN(+zipcode)) && zipcode.length === 5
 
     const onSubmit = () => {
+        setIsLoading(true)
         navigate({
             pathname: `/analyze`,
             search: `?zipcode=${zipcode}`
@@ -18,6 +21,8 @@ export default function AnalysisHomePage() {
     }
 
     return (
+        <div>
+            {isLoading ? <LoadingIcon /> : <></>}
             <div style={{ textAlign: 'center', padding: 50 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', margin: '1rem auto', width: '60%', alignItems: 'center' }}>
                     <img src={require('../assets/hungerbot.gif')} alt="hungerbot" width={300} />
@@ -35,5 +40,6 @@ export default function AnalysisHomePage() {
                     <LittleButton style={{ width: 100 }} label={'Analyze'} onClick={onSubmit} disabled={!isValidZipcode} />
                 </div>
             </div>
+        </div>
     )
 }

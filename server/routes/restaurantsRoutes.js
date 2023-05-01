@@ -43,7 +43,7 @@ const restaurants = async function (req, res) {
         (SELECT initial_lng FROM InitialLocation) + ${radius / 52}
     )
   )
-  SELECT name, latitude, longitude, zipcode, type
+  SELECT name, latitude, longitude, type
   FROM LiberalResults
   WHERE (69 * DEGREES(
     ACOS(
@@ -63,7 +63,7 @@ const restaurants = async function (req, res) {
 }
 
 // GET /restaurants/by-state/:state
-// Return Schema: { name (string), state (string), countRestaurants (int) }
+// Return Schema: { state (string), countRestaurants (int) }
 const allRestaurantsByState = async function (req, res) {
   // const restaurantType = req.params.type
   // const table = getTableName(restaurantType);
@@ -103,8 +103,6 @@ const restaurantsPerCapita = async function (req, res) {
     return
   }
 
-  // TODO: This returns a list of zipcodes and per capita of that zip code, but not total per capita for state
-  // Figure out what we wanna do with that.
   connection.query(`
   WITH ZipCodesInState AS (
     SELECT sum(numPeople) as totalNumPeople
@@ -143,8 +141,8 @@ const restaurantsWithin = async function (req, res) {
   console.log(latitude1, latitude2, longitude1, longitude2)
 
   connection.query(`
-  SELECT name, latitude AS lat, longitude AS lng
-  FROM Restaurants
+  SELECT name, latitude AS lat, longitude AS lng, num_stars
+  FROM AllRestaurants
   WHERE latitude > ${latitude1} AND latitude < ${latitude2} 
   AND longitude > ${longitude1} AND longitude < ${longitude2}
   `, (err, data) => {
@@ -156,9 +154,57 @@ const restaurantsWithin = async function (req, res) {
   });
 }
 
-// NOTE: THIS QUERY IS JUST FOR RETURNING TOP 5 FAST FOOD RESTAURANTS PER STATE
+// GET /restaurants-in-zipcode/
+const restaurantsInZipcode = async function (req, res) {
+
+  const zipcode = req.query.zipcode
+
+  if (!zipcode || !Number(zipcode)) {
+    res.status(400).send('Required query parameter zipcode must be an integer').
+    return
+  }
+
+  connection.query(`
+  WITH ZipCodesWithHash AS (
+      SELECT *, FLOOR(latitude * 3) * 10000 + FLOOR(ABS(longitude) * 5) AS location_hash
+      FROM ZipCodeInfo
+  ), RestaurantsWithHash AS (
+      SELECT *, FLOOR(latitude * 3) * 10000 + FLOOR(ABS(longitude) * 5) AS location_hash
+      FROM Restaurants
+  ), ZipCodeLocation AS (
+      SELECT latitude AS initial_latitude, longitude AS initial_longitude
+      FROM ZipCodesWithHash
+      WHERE zipcode = ${zipcode}
+  ), ClosestZipCodes AS (
+      SELECT *, ABS(longitude - initial_longitude) + ABS(latitude - initial_latitude) AS distance
+      FROM ZipCodesWithHash CROSS JOIN ZipCodeLocation
+      ORDER BY distance ASC
+      LIMIT 15
+  ), Distances AS (
+      SELECT R.name, R.latitude, R.longitude, Z.zipcode, ABS(R.longitude - Z.longitude) + ABS(R.latitude - Z.latitude) AS distance
+      FROM RestaurantsWithHash R JOIN ClosestZipCodes Z ON R.location_hash = Z.location_hash
+  ), RestaurantsWithZipcode AS (
+      SELECT D.name, D.latitude, D.longitude, D.zipcode, min_distance
+      FROM Distances D JOIN (
+          SELECT name, latitude, longitude, MIN(distance) AS min_distance
+          FROM Distances
+          GROUP BY name, latitude, longitude
+      ) AS D2 ON D.name = D2.name AND D.longitude = D2.longitude AND D.distance = D2.min_distance
+  )
+  SELECT *
+  FROM RestaurantsWithZipcode
+  WHERE zipcode = ${zipcode};
+  `, (err, data) => {
+    if (err) {
+      res.status(400).send(`Error in query evaluation: ${err}`);
+    } else {
+      res.json(data);
+    }
+  })
+}
+
 // GET /restaurants/by-state/top/:state
-// Return Schema: [{ name (string), latitude (float), longitude (float), zipcode (int) }]
+// Return Schema: [{ state (string), name (string), countRestaurants (int) }]
 const topRestaurantsByState = async function (req, res) {
   
   const state = req.params.state
@@ -233,8 +279,6 @@ const getAllStates = async function (req, res) {
 }
 
 const michelinStarRestaurantsByState = async function (req, res) {
-  // const restaurantType = req.params.type
-  // const table = getTableName(restaurantType);
 
   const state = req.params.state
   if (!state) {
@@ -273,17 +317,12 @@ const singleStateRestaurants = async function (req, res) {
   }
 
   connection.query(`
-  WITH SingleStateRestaurants AS (
-    SELECT state, name, COUNT(longitude) AS location_count
-    FROM Restaurants
-    GROUP BY name
-    HAVING COUNT(DISTINCT state) = 1)
-SELECT A.name, S.name, location_count
-FROM SingleStateRestaurants S JOIN StateAbbreviations A on S.state = A.abbreviation
-WHERE A.name = '${state}'
+  SELECT R1.name, COUNT(DISTINCT R1.longitude) AS location_count
+FROM Restaurants R1 Left JOIN Restaurants R2 ON R1.name = R2.name AND R1.state <> R2.state JOIN StateAbbreviations A on R1.state = A.abbreviation
+WHERE A.name = '${state}' AND R2.name IS NULL
+GROUP BY R1.name
 ORDER BY location_count DESC
-LIMIT 0, 5 
-  `, (err, data) => {
+LIMIT 0, 5`, (err, data) => {
     if (err) {
       res.status(400).send(`Error in query evaluation: ${err}`);
     } else if (data.length === 0) {
@@ -305,5 +344,6 @@ module.exports = {
   getSpecificRestaurantCount,
   getAllStates,
   michelinStarRestaurantsByState,
-  singleStateRestaurants
+  singleStateRestaurants,
+  restaurantsInZipcode
 }
