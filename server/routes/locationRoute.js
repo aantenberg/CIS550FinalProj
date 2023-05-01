@@ -7,8 +7,8 @@ const locationForZipcode = async function (req, res) {
     const zipcode = req.query.zipcode
 
     if (!zipcode || !Number(zipcode)) {
-        res.status(400).send('Required query parameter zipcode must be an integer').
-            return
+        res.status(400).send('Required query parameter zipcode must be an integer')
+        return
     }
 
     connection.query(`  

@@ -117,17 +117,30 @@ export default function SearchPage() {
 
     const navigateToZipcode = async () => {
         const zipCodeQuery = fetch(`http://localhost:8080/location?zipcode=${zipcode}`)
-        const closestRestaurantsQuery= fetch(`http://localhost:8080/closest-restaurants/fast-food?zipcode=${zipcode}`)
+        const closestRestaurantsQuery = fetch(`http://localhost:8080/closest-restaurants/fast-food?zipcode=${zipcode}`)
+
+        setDidError(false)
+        setClosestRestaurants([])
 
         const [zipCodeResult, closestRestaurantsResult] = await Promise.all([zipCodeQuery, closestRestaurantsQuery])
 
-        const location = await zipCodeResult.json()
-        const closestRestaurants = await closestRestaurantsResult.json()
-        if ( ! location.latitude || ! location.longitude) {
+        let location = null
+        let closestRestaurants = null;
+
+        try {
+            location = await zipCodeResult.json()
+            closestRestaurants = await closestRestaurantsResult.json()
+
+            if ( ! location.latitude || ! location.longitude) { 
+                throw new Error('bad zipcode')
+            }
+
+        } catch (e) {
             console.error(`Not a valid zipcode! ${JSON.stringify(location)}`)
             setDidError(true)
             return
         }
+
         const newCenter = location
         setDidError(false)
         setSearchedCenter(newCenter)
@@ -150,7 +163,7 @@ export default function SearchPage() {
                 </div>
                 {
                     didError ? 
-                        <p className="margin-bottom-8">Oops! That didn't work, please try again</p>
+                        <p className="margin-top-8">Oops! That didn't work, please try again</p>
                         :
                         null
                 }

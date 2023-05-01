@@ -15,6 +15,11 @@ export default function RestaurantMap({ center }) {
     const [tooltipOptions, setTooltipOptions] = useState(null)
 
     const runBoundedRestaurantsSearch = async (mapBounds) => {
+
+        if ( ! mapBounds) {
+            return
+        }
+
         const query = `http://localhost:8080/restaurants-within?latitude1=${mapBounds.south}&latitude2=${mapBounds.north}&longitude1=${mapBounds.west}&longitude2=${mapBounds.east}`
         const results = await fetch(query)
         const restaurants = await results.json()
@@ -103,13 +108,14 @@ const Map = ({
     const [map, setMap] = useState(undefined)
     const [tooltipLocation, setTooltipLocation] = useState(null)
     const [tooltipText, setTooltipText] = useState('')
+    const [locationWatchInfo, setLocationWatchInfo] = useState({ isWatching: false, watchID: null })
 
     useEffect(() => {
         if (ref.current && !map) {
             const newMap = new window.google.maps.Map(ref.current, {})
             setMap(newMap)
             newMap.addListener("idle", () => {
-                onBoundsChanged(newMap.getBounds().toJSON())
+                onBoundsChanged(newMap.getBounds()?.toJSON())
             })
         }
     }, [ref, map, onBoundsChanged])
@@ -120,13 +126,46 @@ const Map = ({
         }
     }, [map, options])
 
-    const moveToUserLocation = (location) => {
+    const moveToLocation = (location) => {
         if (!location || !location.coords) { return }
         map?.panTo({ lat: location.coords.latitude, lng: location.coords.longitude })
     }
 
     useEffect(() => {
-        moveToUserLocation({ coords: searchedCenter })
+
+        if (locationWatchInfo.isWatching && ! locationWatchInfo.watchID) {
+            const watchID = navigator.geolocation.watchPosition((position) => {
+                if (locationWatchInfo.isWatching) {
+                    moveToLocation(position)
+                }
+            }, (e) => {
+                if (e.message === 'Timeout expired') {
+                    navigator.geolocation.clearWatch(locationWatchInfo.watchID)
+                    setLocationWatchInfo({ ...locationWatchInfo, watchID: null })
+                }
+            }, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 1
+            })
+            setLocationWatchInfo({ ...locationWatchInfo, watchID })
+            return () => { 
+                setLocationWatchInfo({ ...locationWatchInfo, isWatching: false })
+                navigator.geolocation.clearWatch(locationWatchInfo.watchID)
+            }
+        }
+
+        if ( ! locationWatchInfo.isWatching && locationWatchInfo.watchID) {
+            navigator.geolocation.clearWatch(locationWatchInfo.watchID)
+            setLocationWatchInfo({ ...locationWatchInfo, watchID: null })
+            return
+        }
+
+    }, [locationWatchInfo.isWatching])
+
+    useEffect(() => {
+        moveToLocation({ coords: searchedCenter })
+        setLocationWatchInfo({ ...locationWatchInfo, isWatching: false })
     }, [searchedCenter])
 
     useEffect(() => {
@@ -156,8 +195,11 @@ const Map = ({
                     })
                 }
             </div>
-            <div id='my-location-container' onClick={() => getLocation().then(loc => moveToUserLocation(loc.position))}>
-                <span className="material-symbols-outlined">
+            <div 
+                id='my-location-container' 
+                onClick={() => setLocationWatchInfo({ ...locationWatchInfo, isWatching: !locationWatchInfo.isWatching })} 
+            >
+                <span className="material-symbols-outlined" style={{ color: locationWatchInfo.isWatching ? 'var(--theme-main)' : 'black' }}>
                     my_location
                 </span>
             </div>

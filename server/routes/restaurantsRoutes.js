@@ -138,8 +138,6 @@ const restaurantsWithin = async function (req, res) {
     return
   }
 
-  console.log(latitude1, latitude2, longitude1, longitude2)
-
   connection.query(`
   SELECT name, latitude AS lat, longitude AS lng, num_stars
   FROM AllRestaurants

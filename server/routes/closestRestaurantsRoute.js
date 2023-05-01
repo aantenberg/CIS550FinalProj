@@ -15,7 +15,7 @@ const closestRestaurants = async function(req, res) {
   const zipcode = req.query.zipcode
 
   if (!zipcode || !Number(zipcode)) {
-    res.status(400).send('Required query parameter zipcode must be an integer').
+    res.status(400).send('Required query parameter zipcode must be an integer')
     return
   }
 
@@ -24,13 +24,26 @@ const closestRestaurants = async function(req, res) {
     SELECT latitude AS initial_lat, longitude AS initial_long
     FROM ZipCodeInfo
     WHERE zipcode = ${zipcode}
+  ), LiberalResults AS (
+    SELECT *
+    FROM AllRestaurants
+    WHERE (
+      latitude BETWEEN
+        (SELECT initial_lat FROM InitialLocation) - 20 / 69
+        AND
+        (SELECT initial_lat FROM InitialLocation) + 20 / 69
+      AND longitude BETWEEN
+        (SELECT initial_long FROM InitialLocation) - 20 / 52
+        AND
+        (SELECT initial_long FROM InitialLocation) + 20 / 52
+    )
   )
-  SELECT (69 * DEGREES(ACOS(COS(RADIANS((SELECT initial_lat FROM InitialLocation))) 
-  * COS(RADIANS(latitude)) * 
-  COS(RADIANS(longitude) - RADIANS((SELECT initial_long FROM InitialLocation))) +
-  SIN(RADIANS((SELECT initial_lat FROM InitialLocation))) * SIN(RADIANS(latitude)))))AS distanceInMiles,
-  R.name, R.latitude, R.longitude, R.hours, R.num_stars
-  FROM AllRestaurants R
+  SELECT (69 * DEGREES(ACOS(COS(RADIANS((SELECT initial_lat FROM InitialLocation)))
+      * COS(RADIANS(latitude)) *
+      COS(RADIANS(longitude) - RADIANS((SELECT initial_long FROM InitialLocation))) +
+      SIN(RADIANS((SELECT initial_lat FROM InitialLocation))) * SIN(RADIANS(latitude))))) AS distanceInMiles,
+      R.name, R.latitude, R.longitude, R.hours, R.num_stars
+  FROM LiberalResults R
   ORDER BY distanceInMiles ASC
   LIMIT 0, 5;
   `, (err, data) => {
