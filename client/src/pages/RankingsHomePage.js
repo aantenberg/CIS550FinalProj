@@ -24,7 +24,7 @@ export default function RankingsHomePage() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`http://${config.server_host}:${config.server_port}/all/states`)
+    fetch(`http://${config.server_host}:${config.server_port}/all-states`)
       .then(res => res.json())
       .then(resJson => setStatesDict(createMultiset(resJson)));
   }, [])
