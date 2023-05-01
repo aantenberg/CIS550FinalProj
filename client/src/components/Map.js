@@ -206,7 +206,7 @@ const Map = ({
             {
                 tooltipLocation ? 
                     <div className='tooltip-container' style={{ top: tooltipLocation.y, left: tooltipLocation.x }} onMouseEnter={onTooltipMouseover}>
-                        <h4 style={{ color: 'black' }}>{tooltipText}</h4>
+                        <h4>{tooltipText}</h4>
                     </div>
                     :
                     null

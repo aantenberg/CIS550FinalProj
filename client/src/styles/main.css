@@ -283,10 +283,28 @@ p.quiet {
     user-select: none;
     -webkit-user-select: none;
     position: absolute;
-    background-color: var(--white);
+    background: var(--panel-color);
+    color: #FFFFFF;
+    font-family: Arial;
+    font-size: 20px;
+    line-height: 20px;
+    text-align: center;
     border-radius: var(--item-radius);
     padding: var(--md-8);
-    transform: translate(-50%, -120%);
+    transform: translate(-50%, -150%);
+}
+.tooltip-container:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-style: solid;
+    border-color: var(--panel-color) transparent;
+    border-width: 10px 10px 0;
+    bottom: -10px;
+    left: 50%;
+    margin-left: -10px;
 }
 
 .loading-icon-container {
